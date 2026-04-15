@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { startExam } from "../../api/studentApi";
 import { storage } from "../../utils/storage";
@@ -72,7 +73,10 @@ const StartExam = () => {
         overflowY: "auto",
       }}>
         <div style={{ maxWidth: "600px", margin: "0 auto" }}>
-          <h2 style={{ fontSize: "1.5rem", marginBottom: "6px" }}>Exam Instructions</h2>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "6px" }}>
+            <Image src="/favicon.png" alt="CognitoMark" width={36} height={36} style={{ borderRadius: "8px", flexShrink: 0 }} />
+            <h2 style={{ fontSize: "1.5rem", margin: 0 }}>Exam Instructions</h2>
+          </div>
           <p style={{ color: "var(--muted)", marginBottom: "32px", fontSize: "0.9rem" }}>
             Read all instructions carefully before starting your exam.
           </p>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { adminLogin } from "../../api/adminApi";
 import { storage } from "../../utils/storage";
@@ -35,9 +36,12 @@ const AdminLogin = () => {
           style={{
             background: "linear-gradient(135deg, #1e1b4b, #4c1d95)",
             boxShadow: "0 8px 24px rgba(109, 40, 217, 0.4)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
-          🛡️
+          <Image src="/favicon.png" alt="CognitoMark" width={48} height={48} style={{ borderRadius: "12px" }} />
         </div>
         <h2>Admin Control Panel</h2>
         <p className="subtitle">Secure access for exam administrators</p>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 
 const BREADCRUMBS = {
@@ -34,6 +35,9 @@ const Navbar = () => {
     }}>
       {/* Logo / brand */}
       <Link href={isAdmin ? "/admin/dashboard" : "/"} style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
         fontWeight: 700,
         fontSize: "1rem",
         color: "var(--primary)",
@@ -42,6 +46,7 @@ const Navbar = () => {
         whiteSpace: "nowrap",
         flexShrink: 0,
       }}>
+        <Image src="/favicon.png" alt="CognitoMark" width={24} height={24} style={{ borderRadius: "6px" }} />
         CognitoMark
       </Link>
 

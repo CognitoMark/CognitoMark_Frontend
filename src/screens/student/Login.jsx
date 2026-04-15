@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { studentLogin } from "../../api/studentApi";
 import { storage } from "../../utils/storage";
@@ -33,7 +34,9 @@ const StudentLogin = () => {
   return (
     <div className="centered-page">
       <div className="login-card">
-        <div className="card-icon">🎓</div>
+        <div className="card-icon">
+          <Image src="/favicon.png" alt="CognitoMark" width={48} height={48} style={{ borderRadius: "12px" }} />
+        </div>
         <h2>Student Portal</h2>
         <p className="subtitle">Enter your credentials to access your exam</p>
 

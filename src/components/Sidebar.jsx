@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { storage } from "../utils/storage";
 
@@ -78,16 +79,34 @@ const Sidebar = ({ isOpen, onToggle }) => {
         {isOpen ? "‹" : "›"}
       </button>
 
+      {/* Brand header */}
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        gap: isOpen ? "8px" : 0,
+        justifyContent: isOpen ? "flex-start" : "center",
+        padding: isOpen ? "14px 16px 0" : "14px 0 0",
+        marginBottom: "8px",
+        overflow: "hidden",
+        marginTop: "44px",
+      }}>
+        <Image src="/favicon.png" alt="CognitoMark" width={20} height={20} style={{ borderRadius: "5px", flexShrink: 0 }} />
+        {isOpen && (
+          <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--primary)", letterSpacing: "-0.01em", whiteSpace: "nowrap" }}>
+            CognitoMark
+          </span>
+        )}
+      </div>
+
       {/* Nav section label */}
       {isOpen && (
         <div style={{
-          padding: "14px 16px 6px",
+          padding: "6px 16px 6px",
           fontSize: "0.65rem",
           fontWeight: 700,
           textTransform: "uppercase",
           letterSpacing: "0.08em",
           color: "var(--muted)",
-          marginTop: "44px",
         }}>
           Navigation
         </div>
