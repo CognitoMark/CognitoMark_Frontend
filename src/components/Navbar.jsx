@@ -13,23 +13,16 @@ const BREADCRUMBS = {
   "/admin/settings":  "Settings",
 };
 
-const HamburgerIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-    <line x1="3" y1="6"  x2="21" y2="6"  />
-    <line x1="3" y1="12" x2="21" y2="12" />
-    <line x1="3" y1="18" x2="21" y2="18" />
-  </svg>
-);
-
-const Navbar = ({ onMobileMenuToggle }) => {
+const Navbar = () => {
   const pathname  = usePathname();
-  const isAdmin   = pathname?.startsWith("/admin") && pathname !== "/admin";
+  const isAdmin   = pathname?.startsWith("/admin");
   const pageTitle = BREADCRUMBS[pathname] ?? "";
 
   return (
     <nav style={{
       display: "flex",
       alignItems: "center",
+      justifyContent: isAdmin ? "flex-start" : "center",
       padding: "0 20px",
       height: "var(--navbar-h)",
       background: "var(--bg)",
@@ -41,18 +34,7 @@ const Navbar = ({ onMobileMenuToggle }) => {
       zIndex: 200,
       gap: "10px",
     }}>
-      {/* Mobile hamburger — only when in admin section */}
-      {isAdmin && onMobileMenuToggle && (
-        <button
-          className="nav-hamburger"
-          onClick={onMobileMenuToggle}
-          aria-label="Toggle navigation"
-        >
-          <HamburgerIcon />
-        </button>
-      )}
-
-      {/* Logo / brand */}
+      {/* Logo / brand - Centered on mobile/student pages if requested */}
       <Link href={isAdmin ? "/admin/dashboard" : "/"} style={{
         display: "flex",
         alignItems: "center",
@@ -64,6 +46,10 @@ const Navbar = ({ onMobileMenuToggle }) => {
         letterSpacing: "-0.01em",
         whiteSpace: "nowrap",
         flexShrink: 0,
+        // If not admin, absolute position to ensure true center regardless of other elements
+        position: (!isAdmin) ? "absolute" : "relative",
+        left: (!isAdmin) ? "50%" : "auto",
+        transform: (!isAdmin) ? "translateX(-50%)" : "none",
       }}>
         <Image src="/favicon.png" alt="CognitoMark" width={24} height={24} style={{ borderRadius: "6px" }} />
         CognitoMark

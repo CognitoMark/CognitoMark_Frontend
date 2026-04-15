@@ -26,7 +26,7 @@ const NAV = [
   )},
 ];
 
-const Sidebar = ({ isOpen, onToggle, isMobileOpen = false }) => {
+const Sidebar = ({ isOpen, onToggle }) => {
   const pathname  = usePathname();
   const router    = useRouter();
 
@@ -37,7 +37,6 @@ const Sidebar = ({ isOpen, onToggle, isMobileOpen = false }) => {
 
   return (
     <aside
-      className={isMobileOpen ? "mobile-open" : ""}
       style={{
         width: isOpen ? "220px" : "60px",
         background: "var(--bg)",
@@ -50,7 +49,7 @@ const Sidebar = ({ isOpen, onToggle, isMobileOpen = false }) => {
         transition: "width 0.2s ease",
         flexShrink: 0,
         overflow: "hidden",
-        zIndex: 160,
+        zIndex: 10,
       }}>
 
       {/* Toggle button */}

@@ -28,22 +28,27 @@ const Settings = () => {
     }
   };
 
-  const Field = ({ label, name, placeholder, last }) => (
-    <div style={{ marginBottom: last ? 0 : "14px" }}>
-      <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "5px" }}>
-        {label}
-      </label>
-      <input
-        className="input"
-        type="password"
-        name={name}
-        placeholder={placeholder}
-        value={form[name]}
-        onChange={handleChange}
-        required
-      />
-    </div>
-  );
+  const Field = ({ label, name, placeholder, last }) => {
+    const fieldId = `settings-${name}`;
+    return (
+      <div style={{ marginBottom: last ? 0 : "14px" }}>
+        <label htmlFor={fieldId} style={{ display: "block", fontSize: "0.78rem", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "5px" }}>
+          {label}
+        </label>
+        <input
+          id={fieldId}
+          className="input"
+          type="password"
+          name={name}
+          placeholder={placeholder}
+          value={form[name]}
+          onChange={handleChange}
+          autoComplete={name === "currentPassword" ? "current-password" : "new-password"}
+          required
+        />
+      </div>
+    );
+  };
 
   return (
     <div className="container">

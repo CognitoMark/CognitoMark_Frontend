@@ -676,6 +676,7 @@ const StudentExam = () => {
               </span>
             </div>
             <input
+              id="difficulty-slider"
               className="stress-range"
               type="range"
               min="0"
@@ -683,6 +684,7 @@ const StudentExam = () => {
               value={stress}
               onChange={(e) => handleStress(e.target.value)}
               disabled={submitted}
+              aria-label="How difficult is this question?"
             />
             <div className="stress-scale">
               <span>Easy</span>
@@ -710,33 +712,42 @@ const StudentExam = () => {
                       : ""
                   }`}
                 >
-                  {currentQuestion.options?.map((opt) => (
-                    <label key={opt} className="mcq-option">
-                      <input
-                        type="radio"
-                        name={`question-${currentQuestion.id}`}
-                        value={opt}
-                        checked={answers[currentQuestion.id] === opt}
-                        onChange={(e) =>
-                          handleAnswerChange(currentQuestion.id, e.target.value, "mcq")
-                        }
-                        disabled={submitted}
-                      />
-                      <span>{opt}</span>
-                    </label>
-                  ))}
+                  {currentQuestion.options?.map((opt, idx) => {
+                    const optionId = `option-${currentQuestion.id}-${idx}`;
+                    return (
+                      <label key={opt} htmlFor={optionId} className="mcq-option">
+                        <input
+                          id={optionId}
+                          type="radio"
+                          name={`question-${currentQuestion.id}`}
+                          value={opt}
+                          checked={answers[currentQuestion.id] === opt}
+                          onChange={(e) =>
+                            handleAnswerChange(currentQuestion.id, e.target.value, "mcq")
+                          }
+                          disabled={submitted}
+                        />
+                        <span>{opt}</span>
+                      </label>
+                    );
+                  })}
                 </div>
               ) : (
-                <textarea
-                  className="input text-answer"
-                  rows="4"
-                  placeholder="Type your answer here…"
-                  value={answers[currentQuestion.id] || ""}
-                  onChange={(e) =>
-                    handleAnswerChange(currentQuestion.id, e.target.value, "text")
-                  }
-                  disabled={submitted}
-                />
+                <div className="form-group">
+                  <label htmlFor={`answer-${currentQuestion.id}`} className="sr-only">Type your answer</label>
+                  <textarea
+                    id={`answer-${currentQuestion.id}`}
+                    name={`answer-${currentQuestion.id}`}
+                    className="input text-answer"
+                    rows="4"
+                    placeholder="Type your answer here…"
+                    value={answers[currentQuestion.id] || ""}
+                    onChange={(e) =>
+                      handleAnswerChange(currentQuestion.id, e.target.value, "text")
+                    }
+                    disabled={submitted}
+                  />
+                </div>
               )}
 
               {/* Navigation footer */}

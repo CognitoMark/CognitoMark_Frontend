@@ -153,7 +153,7 @@ const StartExam = () => {
 
           {/* Exam selector */}
           <div style={{ marginBottom: "16px" }}>
-            <label style={{
+            <label htmlFor="exam-picker-trigger" style={{
               display: "block",
               fontSize: "0.8rem",
               fontWeight: 600,
@@ -163,6 +163,7 @@ const StartExam = () => {
               Select Exam
             </label>
             <button
+              id="exam-picker-trigger"
               type="button"
               onClick={() => setPickerOpen(true)}
               style={{
@@ -200,7 +201,7 @@ const StartExam = () => {
           </div>
 
           {/* Agreement checkbox */}
-          <label style={{
+          <label htmlFor="agreement-checkbox" style={{
             display: "flex",
             alignItems: "flex-start",
             gap: "10px",
@@ -212,6 +213,8 @@ const StartExam = () => {
             marginBottom: "20px",
           }}>
             <input
+              id="agreement-checkbox"
+              name="agreed"
               type="checkbox"
               checked={agreed}
               onChange={(e) => setAgreed(e.target.checked)}

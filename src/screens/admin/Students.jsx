@@ -66,7 +66,10 @@ const Students = () => {
 
       {/* ── Toolbar ── */}
       <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "14px" }}>
+        <label htmlFor="student-search" className="sr-only">Search Students</label>
         <input
+          id="student-search"
+          name="search"
           className="input"
           placeholder="Search by ID or name…"
           value={search}

@@ -33,17 +33,25 @@ const PasswordModal = ({
         </div>
         <div className="modal-body">
           {message && <p>{message}</p>}
-          <input
-            ref={inputRef}
-            className="input"
-            type="password"
-            placeholder="Admin password"
-            value={password}
-            onChange={(e) => onPasswordChange(e.target.value)}
-            disabled={pending}
-          />
+          <div className="form-group">
+            <label htmlFor="admin-password" style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "6px" }}>
+              Admin Password
+            </label>
+            <input
+              id="admin-password"
+              name="adminPassword"
+              ref={inputRef}
+              className="input"
+              type="password"
+              placeholder="Admin password"
+              value={password}
+              onChange={(e) => onPasswordChange(e.target.value)}
+              disabled={pending}
+              autoComplete="current-password"
+            />
+          </div>
           {error && (
-            <div className="notice" style={{ color: "var(--danger)" }}>
+            <div className="notice" style={{ color: "var(--danger)", marginTop: "12px" }}>
               {error}
             </div>
           )}

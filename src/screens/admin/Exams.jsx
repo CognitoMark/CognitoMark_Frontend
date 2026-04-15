@@ -75,18 +75,23 @@ const Exams = () => {
         <div style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "10px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
           New Exam
         </div>
-        <div style={{ display: "flex", gap: "10px" }}>
-          <input
-            className="input"
-            placeholder="Enter exam title…"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleCreate()}
-            style={{ flex: 1 }}
-          />
-          <button className="btn" onClick={handleCreate} disabled={!title.trim()}>
-            + Create Exam
-          </button>
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          <label htmlFor="exam-title" style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--text-secondary)" }}>Exam Title</label>
+          <div style={{ display: "flex", gap: "10px" }}>
+            <input
+              id="exam-title"
+              name="title"
+              className="input"
+              placeholder="Enter exam title…"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+              style={{ flex: 1 }}
+            />
+            <button className="btn" onClick={handleCreate} disabled={!title.trim()}>
+              + Create Exam
+            </button>
+          </div>
         </div>
       </div>
 

@@ -119,16 +119,18 @@ const Questions = () => {
 
           <div style={{ display: "grid", gap: "10px" }}>
             <div>
-              <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "4px" }}>Exam</label>
-              <select className="input" value={selected} onChange={(e) => setSelected(e.target.value)}>
+              <label htmlFor="exam-select" style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "4px" }}>Exam</label>
+              <select id="exam-select" name="examId" className="input" value={selected} onChange={(e) => setSelected(e.target.value)}>
                 <option value="">Select exam…</option>
                 {exams.map((e) => <option key={e.id} value={e.id}>{e.title}</option>)}
               </select>
             </div>
 
             <div>
-              <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "4px" }}>Question Text</label>
+              <label htmlFor="question-text" style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "4px" }}>Question Text</label>
               <textarea
+                id="question-text"
+                name="text"
                 className="input"
                 rows="3"
                 placeholder="Enter the question…"
@@ -139,8 +141,8 @@ const Questions = () => {
             </div>
 
             <div>
-              <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "4px" }}>Type</label>
-              <select className="input" value={form.type} onChange={(e) => setForm((p) => ({ ...p, type: e.target.value, correctAnswer: "" }))}>
+              <label htmlFor="question-type" style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "4px" }}>Type</label>
+              <select id="question-type" name="type" className="input" value={form.type} onChange={(e) => setForm((p) => ({ ...p, type: e.target.value, correctAnswer: "" }))}>
                 <option value="mcq">Multiple Choice (MCQ)</option>
                 <option value="text">Text Answer</option>
               </select>
@@ -148,22 +150,22 @@ const Questions = () => {
 
             {form.type === "mcq" && (
               <div>
-                <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "4px" }}>Options <span style={{ fontWeight: 400 }}>(comma-separated)</span></label>
-                <input className="input" placeholder="Option A, Option B, Option C…" value={form.options} onChange={(e) => setForm((p) => ({ ...p, options: e.target.value }))} />
+                <label htmlFor="question-options" style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "4px" }}>Options <span style={{ fontWeight: 400 }}>(comma-separated)</span></label>
+                <input id="question-options" name="options" className="input" placeholder="Option A, Option B, Option C…" value={form.options} onChange={(e) => setForm((p) => ({ ...p, options: e.target.value }))} />
               </div>
             )}
 
             <div>
-              <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "4px" }}>Correct Answer</label>
+              <label htmlFor="correct-answer" style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "4px" }}>Correct Answer</label>
               {form.type === "mcq" ? (
-                <select className="input" value={form.correctAnswer} onChange={(e) => setForm((p) => ({ ...p, correctAnswer: e.target.value }))}>
+                <select id="correct-answer" name="correctAnswer" className="input" value={form.correctAnswer} onChange={(e) => setForm((p) => ({ ...p, correctAnswer: e.target.value }))}>
                   <option value="">Select correct answer…</option>
                   {form.options.split(",").map((o) => o.trim()).filter(Boolean).map((opt) => (
                     <option key={opt} value={opt}>{opt}</option>
                   ))}
                 </select>
               ) : (
-                <input className="input" placeholder="Expected answer…" value={form.correctAnswer} onChange={(e) => setForm((p) => ({ ...p, correctAnswer: e.target.value }))} />
+                <input id="correct-answer" name="correctAnswer" className="input" placeholder="Expected answer…" value={form.correctAnswer} onChange={(e) => setForm((p) => ({ ...p, correctAnswer: e.target.value }))} />
               )}
             </div>
 
