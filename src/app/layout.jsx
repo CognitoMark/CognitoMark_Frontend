@@ -2,7 +2,8 @@ import "../index.css";
 import Navbar from "../components/Navbar";
 
 export const metadata = {
-  title: "Exam Monitor",
+  title: "CognitoMark",
+  description: "Advanced Real-Time Exam Monitoring Platform",
 };
 
 const RootLayout = ({ children }) => (
