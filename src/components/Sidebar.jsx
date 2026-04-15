@@ -26,7 +26,7 @@ const NAV = [
   )},
 ];
 
-const Sidebar = ({ isOpen, onToggle }) => {
+const Sidebar = ({ isOpen, onToggle, isMobileOpen = false }) => {
   const pathname  = usePathname();
   const router    = useRouter();
 
@@ -36,20 +36,22 @@ const Sidebar = ({ isOpen, onToggle }) => {
   };
 
   return (
-    <aside style={{
-      width: isOpen ? "220px" : "60px",
-      background: "var(--bg)",
-      borderRight: "1px solid var(--border)",
-      display: "flex",
-      flexDirection: "column",
-      position: "sticky",
-      top: "var(--navbar-h)",
-      height: "calc(100vh - var(--navbar-h))",
-      transition: "width 0.2s ease",
-      flexShrink: 0,
-      overflow: "hidden",
-      zIndex: 10,
-    }}>
+    <aside
+      className={isMobileOpen ? "mobile-open" : ""}
+      style={{
+        width: isOpen ? "220px" : "60px",
+        background: "var(--bg)",
+        borderRight: "1px solid var(--border)",
+        display: "flex",
+        flexDirection: "column",
+        position: "sticky",
+        top: "var(--navbar-h)",
+        height: "calc(100vh - var(--navbar-h))",
+        transition: "width 0.2s ease",
+        flexShrink: 0,
+        overflow: "hidden",
+        zIndex: 160,
+      }}>
 
       {/* Toggle button */}
       <button

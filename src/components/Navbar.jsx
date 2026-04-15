@@ -13,8 +13,16 @@ const BREADCRUMBS = {
   "/admin/settings":  "Settings",
 };
 
-const Navbar = () => {
-  const pathname = usePathname();
+const HamburgerIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <line x1="3" y1="6"  x2="21" y2="6"  />
+    <line x1="3" y1="12" x2="21" y2="12" />
+    <line x1="3" y1="18" x2="21" y2="18" />
+  </svg>
+);
+
+const Navbar = ({ onMobileMenuToggle }) => {
+  const pathname  = usePathname();
   const isAdmin   = pathname?.startsWith("/admin") && pathname !== "/admin";
   const pageTitle = BREADCRUMBS[pathname] ?? "";
 
@@ -30,9 +38,20 @@ const Navbar = () => {
       top: 0,
       left: 0,
       right: 0,
-      zIndex: 100,
-      gap: "12px",
+      zIndex: 200,
+      gap: "10px",
     }}>
+      {/* Mobile hamburger — only when in admin section */}
+      {isAdmin && onMobileMenuToggle && (
+        <button
+          className="nav-hamburger"
+          onClick={onMobileMenuToggle}
+          aria-label="Toggle navigation"
+        >
+          <HamburgerIcon />
+        </button>
+      )}
+
       {/* Logo / brand */}
       <Link href={isAdmin ? "/admin/dashboard" : "/"} style={{
         display: "flex",
@@ -50,7 +69,7 @@ const Navbar = () => {
         CognitoMark
       </Link>
 
-      {/* Breadcrumb separator + page name */}
+      {/* Breadcrumb */}
       {isAdmin && pageTitle && (
         <>
           <span style={{ color: "var(--border)", fontSize: "1.1rem", userSelect: "none" }}>/</span>
