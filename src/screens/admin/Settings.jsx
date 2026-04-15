@@ -56,7 +56,7 @@ const Settings = () => {
         </p>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "400px 1fr", gap: "16px", alignItems: "start" }}>
+      <div className="settings-layout">
 
         {/* Change password card */}
         <div className="card">

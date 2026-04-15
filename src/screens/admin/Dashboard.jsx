@@ -85,13 +85,13 @@ const AdminDashboard = () => {
       </div>
 
       {/* ── Metric cards ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px", marginBottom: "20px" }}>
+      <div className="dashboard-metrics" style={{ marginBottom: "20px" }}>
         <MetricCard label="Active Students" value={metrics.activeStudents} icon="🟢" />
         <MetricCard label="Submitted" value={metrics.submittedStudents} icon="✅" />
       </div>
 
       {/* ── Two-column section: feed + sessions ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "280px minmax(0,1fr)", gap: "16px", marginBottom: "20px" }}>
+      <div className="dashboard-main-grid">
 
         {/* Activity feed */}
         <div className="card" style={{ padding: "16px" }}>

@@ -48,19 +48,22 @@ const AdminLogin = () => {
 
         <form onSubmit={handleSubmit} className="grid" style={{ gap: "1.25rem" }}>
           <div className="form-group">
-            <label className="form-label">Username</label>
+            <label htmlFor="username" className="form-label">Username</label>
             <input
+              id="username"
               className="input"
               name="username"
               placeholder="Admin username"
               value={form.username}
               onChange={handleChange}
+              autoComplete="username"
             />
           </div>
           <div className="form-group">
-            <label className="form-label">Password</label>
+            <label htmlFor="password" className="form-label">Password</label>
             <div style={{ position: "relative" }}>
               <input
+                id="password"
                 className="input"
                 type={showPassword ? "text" : "password"}
                 name="password"
@@ -68,6 +71,7 @@ const AdminLogin = () => {
                 style={{ paddingRight: "44px" }}
                 value={form.password}
                 onChange={handleChange}
+                autoComplete="current-password"
               />
               <button
                 type="button"

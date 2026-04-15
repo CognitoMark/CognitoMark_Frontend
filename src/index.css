@@ -275,14 +275,58 @@ select option {
 .grid.two   { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 
-/* ── Dashboard ── */
-.dashboard-metrics {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+/* ── Custom Component Layouts ── */
+.start-layout {
+  min-height: calc(100vh - var(--navbar-h));
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.start-left-panel {
+  border-right: 1px solid var(--border);
+  padding: 40px 48px;
+  overflow-y: auto;
+}
+.start-right-panel {
+  padding: 40px 48px;
+  background: var(--bg-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.dashboard-stack {
-  grid-template-columns: minmax(0, 1fr);
+.questions-layout {
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr);
+  gap: 16px;
   align-items: start;
+}
+
+.settings-layout {
+  display: grid;
+  grid-template-columns: 400px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.dashboard-top-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.dashboard-main-grid {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+/* ── Dashboard ── */
+.dashboard-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
 }
 
 .dashboard-header {
@@ -1304,6 +1348,16 @@ select option {
   .dashboard-metrics { grid-template-columns: 1fr 1fr; }
   .grid.two   { grid-template-columns: minmax(0, 1fr); }
   .grid.three { grid-template-columns: minmax(0, 1fr); }
+
+  /* ── Custom Component Layouts for Mobile ── */
+  .start-layout { grid-template-columns: minmax(0, 1fr); }
+  .start-left-panel { border-right: none; border-bottom: 1px solid var(--border); padding: 24px 18px; }
+  .start-right-panel { padding: 24px 18px; }
+  
+  .questions-layout { grid-template-columns: minmax(0, 1fr); }
+  .settings-layout { grid-template-columns: minmax(0, 1fr); }
+  .dashboard-top-metrics { grid-template-columns: repeat(2, 1fr); }
+  .dashboard-main-grid { grid-template-columns: minmax(0, 1fr); }
 
   /* ── Tables ── */
   .table-wrap .table { min-width: 480px; }

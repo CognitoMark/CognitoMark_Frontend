@@ -109,7 +109,7 @@ const Questions = () => {
       </div>
 
       {/* ── Two-column layout ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "340px minmax(0,1fr)", gap: "16px", alignItems: "start" }}>
+      <div className="questions-layout">
 
         {/* Left: Add question form */}
         <div className="card" style={{ position: "sticky", top: "calc(var(--navbar-h) + 16px)" }}>

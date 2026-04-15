@@ -42,23 +42,27 @@ const StudentLogin = () => {
 
         <form onSubmit={handleSubmit} className="grid" style={{ gap: "1.25rem" }}>
           <div className="form-group">
-            <label className="form-label">Student ID</label>
+            <label htmlFor="studentId" className="form-label">Student ID</label>
             <input
+              id="studentId"
               className="input"
               name="studentId"
               placeholder="e.g. STU-2024-001"
               value={form.studentId}
               onChange={handleChange}
+              autoComplete="username"
             />
           </div>
           <div className="form-group">
-            <label className="form-label">Full Name</label>
+            <label htmlFor="name" className="form-label">Full Name</label>
             <input
+              id="name"
               className="input"
               name="name"
               placeholder="Your full name"
               value={form.name}
               onChange={handleChange}
+              autoComplete="name"
             />
           </div>
           {error && (

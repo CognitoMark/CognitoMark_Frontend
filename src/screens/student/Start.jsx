@@ -60,18 +60,10 @@ const StartExam = () => {
   const selectedExam = exams.find((e) => String(e.id) === selected);
 
   return (
-    <div style={{
-      minHeight: "calc(100vh - var(--navbar-h))",
-      display: "grid",
-      gridTemplateColumns: "1fr 1fr",
-    }}>
+    <div className="start-layout">
 
       {/* ── Left panel: Instructions ── */}
-      <div style={{
-        borderRight: "1px solid var(--border)",
-        padding: "40px 48px",
-        overflowY: "auto",
-      }}>
+      <div className="start-left-panel">
         <div style={{ maxWidth: "600px", margin: "0 auto" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "6px" }}>
             <Image src="/favicon.png" alt="CognitoMark" width={36} height={36} style={{ borderRadius: "8px", flexShrink: 0 }} />
@@ -151,14 +143,9 @@ const StartExam = () => {
         </div>
       </div>
 
-      {/* ── Right panel: Start form ── */}
-      <div style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "40px 48px",
-      }}>
-        <div style={{ width: "100%", maxWidth: "440px" }}>
+      {/* ── Right panel: Exam Picker ── */}
+      <div className="start-right-panel">
+        <div className="login-card" style={{ width: "100%", padding: "36px" }}>
           <h3 style={{ fontSize: "1.2rem", marginBottom: "6px" }}>Ready to begin?</h3>
           <p style={{ color: "var(--muted)", fontSize: "0.875rem", marginBottom: "28px" }}>
             Select your exam and confirm that you have read the instructions.
