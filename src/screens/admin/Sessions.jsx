@@ -24,6 +24,13 @@ const buildCsv = (headers, rows) => {
   return lines.join("\r\n");
 };
 
+const formatAnswerSwitches = (switches) => {
+  if (!Array.isArray(switches) || switches.length === 0) return "";
+  return switches
+    .map((entry) => `${entry.from ?? "-"} -> ${entry.to ?? "-"}`)
+    .join(" | ");
+};
+
 const Sessions = () => {
   const [sessions, setSessions] = useState([]);
   const clickWindowSeconds = Math.round(
@@ -52,35 +59,51 @@ const Sessions = () => {
 
     const headers = [
       "Session ID",
-      "Student",
-      "Exam",
-      "Started",
-      "Ended",
-      "Submitted",
-      "Avg Stress",
-      "Total Clicks",
+      "Student ID",
+      "Student Name",
+      "Exam Title",
+      "Started At",
+      "Ended At",
+      "Status",
+      "Session Violations",
+      "Session Total Clicks",
+      "Session Avg Stress",
+      "End of Exam Stress",
+      "Session Feedback",
+      "Score Obtained",
+      "Score Total",
       "Question Text",
-      "Answer",
-      "Question Stress",
-      "Response Clicks",
-      "Response Header",
-      "Response Stress Bar",
-      "Response Question",
-      "Response Prev",
-      "Response Next",
-      "Response Other",
+      "Student Answer",
+      "Correct Answer",
+      "Is Correct",
+      "Question Avg Stress",
+      "Question Violations",
+      "Total Switches",
+      "Answer Switches",
+      "Question Clicks",
+      "Header Clicks",
+      "Stress Bar Clicks",
+      "Nav Clicks (Prev)",
+      "Nav Clicks (Next)",
+      "Other Clicks",
     ];
 
     const rows = detailResults.flatMap(({ session, responses }) => {
       const baseRow = [
         session.id,
         session.student_id,
+        session.name || "-",
         session.exam_title,
         formatDateTime(session.started_at),
         formatDateTime(session.submitted_at),
-        session.submitted_at ? "Yes" : "No",
+        session.submitted_at ? "Submitted" : "Active",
+        session.violation_count || 0,
+        session.total_clicks || 0,
         Math.round(Number(session.avg_stress_level || 0)),
-        session.total_clicks,
+        Math.round(Number(session.stress_level || 0)),
+        session.feedback || "-",
+        session.score_obtained ?? 0,
+        session.score_total ?? 0,
       ];
 
       const emptyBaseRow = new Array(baseRow.length).fill("");
@@ -88,16 +111,7 @@ const Sessions = () => {
       if (!responses.length) {
         return [[
           ...baseRow,
-          "-",
-          "-",
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
+          ...new Array(headers.length - baseRow.length).fill("-")
         ]];
       }
 
@@ -105,14 +119,18 @@ const Sessions = () => {
         ...(index === 0 ? baseRow : emptyBaseRow),
         r.text,
         r.answer || "-",
+        r.correct_answer || "-",
+        r.is_correct ? "Yes" : "No",
         Math.round(Number(r.avg_stress_level || 0)),
-        r.click_count,
-        r.header_clicks,
-        r.stress_clicks,
-        r.question_clicks,
+        r.violation_count || 0,
+        r.total_switches || 0,
+        formatAnswerSwitches(r.answer_switches),
+        r.question_clicks || 0,
+        r.header_clicks || 0,
+        r.stress_clicks || 0,
         r.prev_clicks || 0,
         r.next_clicks || 0,
-        r.other_clicks,
+        r.other_clicks || 0,
       ]);
     });
 
