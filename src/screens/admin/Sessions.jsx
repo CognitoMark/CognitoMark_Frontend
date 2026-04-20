@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { fetchSessionDetail, fetchSessions } from "../../api/adminApi";
+import { fetchSessionDetail, fetchSessions, fetchSessionsDetailsBulk } from "../../api/adminApi";
 import { useSocket } from "../../hooks/useSocket";
+
 const toCsvValue = (value) => {
   if (value === null || value === undefined) return "";
   const str = String(value);
@@ -31,11 +32,107 @@ const formatAnswerSwitches = (switches) => {
     .join(" | ");
 };
 
+const EXPORT_HEADERS = [
+  "Record Type",
+  "Session ID",
+  "Student ID",
+  "Student Name",
+  "Exam ID",
+  "Exam Title",
+  "Session Started At",
+  "Session Submitted At",
+  "Session Created At",
+  "Session Updated At",
+  "Session Feedback",
+  "Session Total Clicks",
+  "Session Avg Stress",
+  "Session Overall Stress",
+  "Session Violations",
+  "Score Total",
+  "Score Obtained",
+  "Click Window Config Sec",
+  "Click Window Start",
+  "Click Window End",
+  "Question ID",
+  "Question Text",
+  "To Question ID",
+  "To Question Text",
+  "From Question Number",
+  "To Question Number",
+  "Direction",
+  "Answer",
+  "Is Correct",
+  "Response Created At",
+  "Response Updated At",
+  "Total Switches",
+  "Answer Switches",
+  "Click Count",
+  "Header Clicks",
+  "Integrity Clicks",
+  "Stress Clicks",
+  "Panel Clicks",
+  "Question Clicks",
+  "Footer Clicks",
+  "Other Clicks",
+  "Stress Level",
+  "Event ID",
+  "Event Type",
+  "Event Created At",
+  "Event Updated At",
+  "Event Value",
+];
+
+const EXPORT_DATETIME_FORMATTER = new Intl.DateTimeFormat("en-GB", {
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hour12: false,
+});
+
+const formatExportDateTime = (value, emptyValue = "-") => {
+  if (!value) return emptyValue;
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return String(value);
+  return EXPORT_DATETIME_FORMATTER.format(date);
+};
+
+const toRoundedNumber = (value, fallback = 0) => {
+  const num = Number(value);
+  return Number.isFinite(num) ? Math.round(num) : fallback;
+};
+
+const toNumberOr = (value, fallback = 0) => {
+  const num = Number(value);
+  return Number.isFinite(num) ? num : fallback;
+};
+
+const toNumberOrBlank = (value) => {
+  const num = Number(value);
+  return Number.isFinite(num) ? num : "";
+};
+
+const toEventValue = (value) => {
+  if (value === null || value === undefined) {
+    return "";
+  }
+  return typeof value === "string" ? value : JSON.stringify(value);
+};
+
+const buildExportRow = (baseRecord, overrides = {}) => {
+  const row = Object.fromEntries(EXPORT_HEADERS.map((header) => [header, ""]));
+  Object.assign(row, baseRecord, overrides);
+  return EXPORT_HEADERS.map((header) => row[header]);
+};
+
 const Sessions = () => {
   const [sessions, setSessions] = useState([]);
   const clickWindowSeconds = Math.round(
     (Number(process.env.NEXT_PUBLIC_CLICK_WINDOW_MS) || 60000) / 1000,
   );
+
   const formatDateTime = (value) => {
     if (!value) return "-";
     const date = new Date(value);
@@ -43,102 +140,160 @@ const Sessions = () => {
     return date.toLocaleString();
   };
 
+  const buildSessionBaseRecord = (session) => ({
+    "Session ID": session.id ?? "",
+    "Student ID": session.student_id ?? "",
+    "Student Name": session.name ?? "",
+    "Exam ID": session.exam_id ?? "",
+    "Exam Title": session.exam_title ?? "",
+    "Session Started At": formatExportDateTime(session.started_at, ""),
+    "Session Submitted At": formatExportDateTime(session.submitted_at, "-"),
+    "Session Created At": formatExportDateTime(
+      session.created_at ?? session.started_at,
+      "-",
+    ),
+    "Session Updated At": formatExportDateTime(session.updated_at, "-"),
+    "Session Feedback": session.feedback ?? "",
+    "Session Total Clicks": toNumberOr(session.total_clicks, 0),
+    "Session Avg Stress": toRoundedNumber(session.avg_stress_level, 0),
+    "Session Overall Stress": toRoundedNumber(session.stress_level, 0),
+    "Session Violations": toNumberOr(session.violation_count, 0),
+    "Score Total": toNumberOr(session.score_total, 0),
+    "Score Obtained": toNumberOr(session.score_obtained, 0),
+    "Click Window Config Sec": clickWindowSeconds,
+  });
+
   const exportToCsv = async () => {
     if (!sessions.length) return;
 
-    const detailResults = await Promise.all(
-      sessions.map(async (session) => {
-        try {
-          const { data } = await fetchSessionDetail(session.id);
-          return { session: data.session, responses: data.responses || [] };
-        } catch (error) {
-          return { session, responses: [] };
-        }
-      }),
+    try {
+      const sessionIds = sessions.map(s => s.id);
+      const { data } = await fetchSessionsDetailsBulk(sessionIds);
+      
+      const detailResults = data.details.map((detail) => ({
+        session: detail.session || sessionIds.find(id => id === detail.session?.id) || {},
+        responses: detail.responses || [],
+        navigationTransitions: detail.navigationTransitions || [],
+        clickWindows: detail.clickWindows || [],
+        telemetryEvents: detail.telemetryEvents || [],
+      }));
+
+      const rows = detailResults.flatMap(
+      ({
+        session,
+        responses,
+        navigationTransitions,
+        clickWindows,
+        telemetryEvents,
+      }) => {
+        const baseRecord = buildSessionBaseRecord(session);
+        const questionTextById = responses.reduce((acc, response) => {
+          if (Number.isFinite(Number(response.question_id)) && response.text) {
+            acc[response.question_id] = response.text;
+          }
+          return acc;
+        }, {});
+
+        const sessionRows = [
+          buildExportRow(baseRecord, { "Record Type": "SESSION_SUMMARY" }),
+        ];
+
+        clickWindows.forEach((windowRow) => {
+          sessionRows.push(
+            buildExportRow(baseRecord, {
+              "Record Type": "CLICK_WINDOW",
+              "Click Window Start": formatExportDateTime(
+                windowRow.window_start,
+                "",
+              ),
+              "Click Window End": formatExportDateTime(windowRow.window_end, ""),
+              "Question ID": windowRow.question_id ?? "",
+              "Question Text":
+                windowRow.question_text ||
+                questionTextById[windowRow.question_id] ||
+                "",
+              "Click Count": toNumberOr(windowRow.click_count, 0),
+              "Header Clicks": toNumberOr(windowRow.header_clicks, 0),
+              "Integrity Clicks": toNumberOr(windowRow.integrity_clicks, 0),
+              "Stress Clicks": toNumberOr(windowRow.stress_clicks, 0),
+              "Panel Clicks": toNumberOr(windowRow.panel_clicks, 0),
+              "Question Clicks": toNumberOr(windowRow.question_clicks, 0),
+              "Footer Clicks": toNumberOr(windowRow.footer_clicks, 0),
+              "Other Clicks": toNumberOr(windowRow.other_clicks, 0),
+              "Stress Level": toRoundedNumber(windowRow.stress_level, 0),
+            }),
+          );
+        });
+
+        responses.forEach((response) => {
+          sessionRows.push(
+            buildExportRow(baseRecord, {
+              "Record Type": "RESPONSE",
+              "Question ID": response.question_id ?? "",
+              "Question Text": response.text ?? "",
+              Answer: response.answer ?? "",
+              "Is Correct":
+                typeof response.is_correct === "boolean"
+                  ? String(response.is_correct)
+                  : "",
+              "Response Created At": formatExportDateTime(response.created_at, ""),
+              "Response Updated At": formatExportDateTime(response.updated_at, ""),
+              "Total Switches": toNumberOr(response.total_switches, 0),
+              "Answer Switches": formatAnswerSwitches(response.answer_switches),
+              "Click Count": toNumberOr(response.click_count, 0),
+              "Header Clicks": toNumberOr(response.header_clicks, 0),
+              "Integrity Clicks": toNumberOr(response.integrity_clicks, 0),
+              "Stress Clicks": toNumberOr(response.stress_clicks, 0),
+              "Panel Clicks": toNumberOr(response.panel_clicks, 0),
+              "Question Clicks": toNumberOr(response.question_clicks, 0),
+              "Footer Clicks": toNumberOr(response.footer_clicks, 0),
+              "Other Clicks": toNumberOr(response.other_clicks, 0),
+              "Stress Level": toRoundedNumber(response.avg_stress_level, 0),
+            }),
+          );
+        });
+
+        navigationTransitions.forEach((transition) => {
+          sessionRows.push(
+            buildExportRow(baseRecord, {
+              "Record Type": "NAVIGATION_SUMMARY",
+              "Question ID": transition.from_question_id ?? "",
+              "Question Text": transition.from_question_text ?? "",
+              "To Question ID": transition.to_question_id ?? "",
+              "To Question Text": transition.to_question_text ?? "",
+              "From Question Number": transition.from_question_number ?? "",
+              "To Question Number": transition.to_question_number ?? "",
+              Direction: transition.direction ?? "",
+              "Stress Level": toNumberOrBlank(transition.count),
+            }),
+          );
+        });
+
+        telemetryEvents.forEach((event) => {
+          sessionRows.push(
+            buildExportRow(baseRecord, {
+              "Record Type": "TELEMETRY_EVENT",
+              "Question ID": event.question_id ?? "",
+              "Question Text": event.question_text ?? "",
+              "To Question ID": event.to_question_id ?? "",
+              "To Question Text": event.to_question_text ?? "",
+              "From Question Number": event.from_question_number ?? "",
+              "To Question Number": event.to_question_number ?? "",
+              Direction: event.direction ?? "",
+              "Event ID": event.id ?? "",
+              "Event Type": event.type ?? "",
+              "Event Created At": formatExportDateTime(event.created_at, ""),
+              "Event Updated At": formatExportDateTime(event.updated_at, "-"),
+              "Event Value": toEventValue(event.value),
+            }),
+          );
+        });
+
+        return sessionRows;
+      },
     );
 
-    const headers = [
-      "Session ID",
-      "Student ID",
-      "Student Name",
-      "Exam Title",
-      "Started At",
-      "Ended At",
-      "Status",
-      "Session Violations",
-      "Session Total Clicks",
-      "Session Avg Stress",
-      "End of Exam Stress",
-      "Session Feedback",
-      "Score Obtained",
-      "Score Total",
-      "Question Text",
-      "Student Answer",
-      "Correct Answer",
-      "Is Correct",
-      "Question Avg Stress",
-      "Question Violations",
-      "Total Switches",
-      "Answer Switches",
-      "Question Clicks",
-      "Header Clicks",
-      "Stress Bar Clicks",
-      "Nav Clicks (Prev)",
-      "Nav Clicks (Next)",
-      "Other Clicks",
-    ];
-
-    const rows = detailResults.flatMap(({ session, responses }) => {
-      const baseRow = [
-        session.id,
-        session.student_id,
-        session.name || "-",
-        session.exam_title,
-        formatDateTime(session.started_at),
-        formatDateTime(session.submitted_at),
-        session.submitted_at ? "Submitted" : "Active",
-        session.violation_count || 0,
-        session.total_clicks || 0,
-        Math.round(Number(session.avg_stress_level || 0)),
-        Math.round(Number(session.stress_level || 0)),
-        session.feedback || "-",
-        session.score_obtained ?? 0,
-        session.score_total ?? 0,
-      ];
-
-      const emptyBaseRow = new Array(baseRow.length).fill("");
-
-      if (!responses.length) {
-        return [[
-          ...baseRow,
-          ...new Array(headers.length - baseRow.length).fill("-")
-        ]];
-      }
-
-      return responses.map((r, index) => [
-        ...(index === 0 ? baseRow : emptyBaseRow),
-        r.text,
-        r.answer || "-",
-        r.correct_answer || "-",
-        r.is_correct ? "Yes" : "No",
-        Math.round(Number(r.avg_stress_level || 0)),
-        r.violation_count || 0,
-        r.total_switches || 0,
-        formatAnswerSwitches(r.answer_switches),
-        r.question_clicks || 0,
-        r.header_clicks || 0,
-        r.stress_clicks || 0,
-        r.prev_clicks || 0,
-        r.next_clicks || 0,
-        r.other_clicks || 0,
-      ]);
-    });
-
-    const csv = [
-      buildCsv(["Click Window (sec)", clickWindowSeconds], []),
-      "",
-      buildCsv(headers, rows),
-    ].join("\r\n");
+    const csv = buildCsv(EXPORT_HEADERS, rows);
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -148,6 +303,9 @@ const Sessions = () => {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Failed to export sessions data", error);
+    }
   };
 
   const load = async () => {
@@ -181,10 +339,23 @@ const Sessions = () => {
 
   return (
     <div className="container">
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "24px" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          marginBottom: "24px",
+        }}
+      >
         <div>
           <h2 style={{ margin: 0, fontSize: "1.3rem" }}>Sessions</h2>
-          <p style={{ margin: "2px 0 0", fontSize: "0.8rem", color: "var(--muted)" }}>
+          <p
+            style={{
+              margin: "2px 0 0",
+              fontSize: "0.8rem",
+              color: "var(--muted)",
+            }}
+          >
             All exam sessions — click a row to see details
           </p>
         </div>

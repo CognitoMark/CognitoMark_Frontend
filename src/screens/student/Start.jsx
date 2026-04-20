@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { startExam } from "../../api/studentApi";
 import { storage } from "../../utils/storage";
+import { useNotify } from "../../components/Toast";
 
 const DOS = [
   "Stay on this browser tab and window at all times.",
@@ -26,9 +27,9 @@ const StartExam = () => {
   const router = useRouter();
   const [exams, setExams] = useState([]);
   const [selected, setSelected] = useState("");
-  const [error, setError] = useState("");
   const [pickerOpen, setPickerOpen] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const notify = useNotify();
 
   useEffect(() => {
     const saved = storage.get("exams") || [];
@@ -36,7 +37,6 @@ const StartExam = () => {
   }, []);
 
   const handleStart = async () => {
-    setError("");
     try {
       const student = storage.get("student");
       if (!student) {
@@ -53,7 +53,7 @@ const StartExam = () => {
       localStorage.setItem("examId", String(data.exam.id));
       router.push("/exam");
     } catch (err) {
-      setError(err.response?.data?.error || "Unable to start exam");
+      notify.error(err?.errorMessage || err?.response?.data?.error || "Unable to start exam", "Start Failed");
     }
   };
 
@@ -224,20 +224,6 @@ const StartExam = () => {
               I have read and understood the instructions and agree to comply with the exam rules.
             </span>
           </label>
-
-          {error && (
-            <div style={{
-              padding: "10px 14px",
-              background: "var(--danger-dim)",
-              border: "1px solid rgba(248, 81, 73, 0.3)",
-              borderRadius: "var(--r-md)",
-              color: "var(--danger)",
-              fontSize: "0.875rem",
-              marginBottom: "16px",
-            }}>
-              {error}
-            </div>
-          )}
 
           <button
             className="btn"

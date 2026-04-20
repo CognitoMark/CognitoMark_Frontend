@@ -5,11 +5,13 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { studentLogin } from "../../api/studentApi";
 import { storage } from "../../utils/storage";
+import { useNotify } from "../../components/Toast";
 
 const StudentLogin = () => {
   const router = useRouter();
   const [form, setForm] = useState({ studentId: "", name: "" });
-  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const notify = useNotify();
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -17,17 +19,28 @@ const StudentLogin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+    if (loading) return;
+    setLoading(true);
+
     try {
-      const { data } = await studentLogin(form);
+      const payload = {
+        studentId: form.studentId.trim(),
+        name: form.name.trim(),
+      };
+      const { data } = await studentLogin(payload);
       storage.set("student", data.student);
       storage.set("exams", data.exams);
+      storage.set("studentToken", data.token);
       if (data.student?.id) {
         localStorage.setItem("studentDbId", String(data.student.id));
       }
+      notify.success(`Welcome back, ${data.student.name}!`, "Login Successful");
       router.push("/start");
     } catch (err) {
-      setError(err.response?.data?.error || "Login failed");
+      const msg = err?.errorMessage || err?.response?.data?.error || "Login failed";
+      notify.error(msg, "Access Denied");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -51,6 +64,8 @@ const StudentLogin = () => {
               value={form.studentId}
               onChange={handleChange}
               autoComplete="username"
+              required
+              disabled={loading}
             />
           </div>
           <div className="form-group">
@@ -63,19 +78,17 @@ const StudentLogin = () => {
               value={form.name}
               onChange={handleChange}
               autoComplete="name"
+              required
+              disabled={loading}
             />
           </div>
-          {error && (
-            <div className="notice danger" style={{ textAlign: "center" }}>
-              {error}
-            </div>
-          )}
           <button
             className="btn"
             type="submit"
+            disabled={loading}
             style={{ fontSize: "1rem", padding: "13px", marginTop: "4px" }}
           >
-            Access Exam Portal →
+            {loading ? "Accessing…" : "Access Exam Portal →"}
           </button>
         </form>
       </div>

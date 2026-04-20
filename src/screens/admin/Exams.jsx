@@ -4,21 +4,21 @@ import { useEffect, useMemo, useState } from "react";
 import { createExam, deleteExam, fetchExams } from "../../api/adminApi";
 import ConfirmModal from "../../components/ConfirmModal";
 import { useSocket } from "../../hooks/useSocket";
+import { useNotify } from "../../components/Toast";
 
 const Exams = () => {
   const [exams, setExams] = useState([]);
   const [title, setTitle] = useState("");
-  const [error, setError] = useState("");
+  const notify = useNotify();
   const [deletingId, setDeletingId] = useState(null);
   const [modal, setModal] = useState({ isOpen: false, id: null });
 
   const load = async () => {
     try {
-      setError("");
       const { data } = await fetchExams();
       setExams(data);
     } catch (err) {
-      setError(err?.response?.data?.error || "Failed to load exams.");
+      notify.error(err?.errorMessage || err?.response?.data?.error || error?.errorMessage || error?.response?.data?.error || "Failed to load exams.");
     }
   };
 
@@ -34,12 +34,12 @@ const Exams = () => {
   const handleCreate = async () => {
     if (!title.trim()) return;
     try {
-      setError("");
       await createExam({ title });
       setTitle("");
+      notify.success("Exam created successfully!");
       load();
     } catch (err) {
-      setError(err?.response?.data?.error || "Failed to create exam.");
+      notify.error(err?.errorMessage || err?.response?.data?.error || error?.errorMessage || error?.response?.data?.error || "Failed to create exam.");
     }
   };
 
@@ -48,12 +48,12 @@ const Exams = () => {
     setModal({ isOpen: false, id: null });
     if (deletingId) return;
     try {
-      setError("");
       setDeletingId(id);
       await deleteExam(id);
       setExams((prev) => prev.filter((e) => e.id !== id));
+      notify.success("Exam deleted successfully!");
     } catch (err) {
-      setError(err?.response?.data?.error || "Failed to delete exam.");
+      notify.error(err?.errorMessage || err?.response?.data?.error || error?.errorMessage || error?.response?.data?.error || "Failed to delete exam.");
     } finally {
       setDeletingId(null);
     }
@@ -105,8 +105,6 @@ const Exams = () => {
             {exams.length} {exams.length === 1 ? "exam" : "exams"}
           </span>
         </div>
-
-        {error && <div className="notice danger" style={{ marginBottom: "12px" }}>{error}</div>}
 
         {exams.length === 0 ? (
           <div style={{ textAlign: "center", padding: "40px 0", color: "var(--muted)", fontSize: "0.875rem" }}>

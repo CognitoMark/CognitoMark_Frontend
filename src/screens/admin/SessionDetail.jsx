@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { fetchSessionDetail } from "../../api/adminApi";
 import { useSocket } from "../../hooks/useSocket";
+import { useNotify } from "../../components/Toast";
 const toCsvValue = (value) => {
   if (value === null || value === undefined) return "";
   const str = String(value);
@@ -60,6 +61,7 @@ const SessionDetail = () => {
   const [session, setSession] = useState(null);
   const [responses, setResponses] = useState([]);
   const [navigationTransitions, setNavigationTransitions] = useState([]);
+  const notify = useNotify();
 
   const load = async () => {
     try {
@@ -68,6 +70,7 @@ const SessionDetail = () => {
       setResponses(data.responses);
       setNavigationTransitions(data.navigationTransitions || []);
     } catch (error) {
+      notify.error(err?.errorMessage || err?.response?.data?.error || error?.errorMessage || error?.response?.data?.error || "Failed to load session details");
       console.error("Failed to load session details", error);
     }
   };

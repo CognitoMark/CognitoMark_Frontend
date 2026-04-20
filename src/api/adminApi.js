@@ -15,5 +15,6 @@ export const fetchStudents = () => api.get("/api/admin/students");
 export const deleteStudent = (id) => api.delete(`/api/admin/students/${id}`);
 export const fetchSessions = () => api.get("/api/admin/sessions");
 export const fetchSessionDetail = (id) => api.get(`/api/admin/sessions/${id}`);
+export const fetchSessionsDetailsBulk = (sessionIds) => api.post("/api/admin/sessions/bulk-details", { sessionIds });
 export const resetDatabase = (payload) => api.post("/api/admin/reset", payload);
 export const changeAdminPassword = (payload) => api.post("/api/admin/password", payload);

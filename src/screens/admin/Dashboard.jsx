@@ -6,8 +6,10 @@ import { fetchDashboard, resetDatabase } from "../../api/adminApi";
 import MetricCard from "../../components/MetricCard";
 import PasswordModal from "../../components/PasswordModal";
 import { useSocket } from "../../hooks/useSocket";
+import { useNotify } from "../../components/Toast";
 
 const AdminDashboard = () => {
+  const notify = useNotify();
   const clickWindowSeconds = Math.round(
     (Number(process.env.NEXT_PUBLIC_CLICK_WINDOW_MS) || 60000) / 1000,
   );
@@ -18,13 +20,18 @@ const AdminDashboard = () => {
   const [resetModal, setResetModal] = useState({ open: false, password: "", error: "", pending: false });
 
   const pushFeed = (message) =>
-    setFeed((prev) => [{ id: Date.now(), message }, ...prev].slice(0, 30));
+    setFeed((prev) => [{ id: Date.now() + "-" + Math.random().toString(36).substring(2, 9), message }, ...prev].slice(0, 30));
 
   const refresh = async () => {
-    const { data } = await fetchDashboard();
-    setMetrics(data.metrics);
-    setSessions(data.sessions);
-    setClickSeries(data.clickSeries || []);
+    try {
+      const { data } = await fetchDashboard();
+      setMetrics(data.metrics);
+      setSessions(data.sessions);
+      setClickSeries(data.clickSeries || []);
+    } catch (err) {
+      console.error("Dashboard refresh failed:", err);
+      notify.error("Failed to sync dashboard data. Check your connection.", "Sync Error");
+    }
   };
 
   const confirmReset = async () => {
@@ -39,7 +46,7 @@ const AdminDashboard = () => {
       setResetModal({ open: false, password: "", error: "", pending: false });
       refresh();
     } catch (err) {
-      setResetModal((p) => ({ ...p, pending: false, error: err?.response?.data?.error || "Failed to reset database" }));
+      setResetModal((p) => ({ ...p, pending: false, error: err?.errorMessage || err?.response?.data?.error || "Failed to reset database" }));
     }
   };
 

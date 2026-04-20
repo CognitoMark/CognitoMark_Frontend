@@ -2,27 +2,26 @@
 
 import { useState } from "react";
 import { changeAdminPassword } from "../../api/adminApi";
+import { useNotify } from "../../components/Toast";
 
 const Settings = () => {
   const [form, setForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const notify = useNotify();
 
   const handleChange = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(""); setSuccess("");
-    if (form.newPassword !== form.confirmPassword) { setError("New passwords do not match."); return; }
-    if (form.newPassword.length < 4) { setError("New password must be at least 4 characters."); return; }
+    if (form.newPassword !== form.confirmPassword) { notify.error("New passwords do not match."); return; }
+    if (form.newPassword.length < 4) { notify.error("New password must be at least 4 characters."); return; }
     setLoading(true);
     try {
       await changeAdminPassword({ currentPassword: form.currentPassword, newPassword: form.newPassword });
-      setSuccess("Password changed successfully.");
+      notify.success("Password changed successfully.");
       setForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
     } catch (err) {
-      setError(err.response?.data?.error || "Failed to change password.");
+      notify.error(err?.errorMessage || err?.response?.data?.error || error?.errorMessage || error?.response?.data?.error || "Failed to change password.");
     } finally {
       setLoading(false);
     }
@@ -77,23 +76,6 @@ const Settings = () => {
             <div style={{ borderTop: "1px solid var(--border)", margin: "16px 0" }} />
             <Field label="New Password" name="newPassword" placeholder="Enter new password" />
             <Field label="Confirm New Password" name="confirmPassword" placeholder="Re-enter new password" last />
-
-            {error && (
-              <div className="notice danger" style={{ marginTop: "14px", fontSize: "0.82rem" }}>{error}</div>
-            )}
-            {success && (
-              <div style={{
-                marginTop: "14px",
-                padding: "10px 14px",
-                background: "var(--green-dim)",
-                border: "1px solid rgba(63,185,80,0.3)",
-                borderRadius: "var(--r-md)",
-                color: "var(--green)",
-                fontSize: "0.82rem",
-              }}>
-                {success}
-              </div>
-            )}
 
             <button
               type="submit"

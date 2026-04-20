@@ -13,6 +13,8 @@ import {
   submitExam,
   updateStress,
 } from "../../api/sessionApi";
+import { useNotify } from "../../components/Toast";
+import { useOnlineStatus } from "../../hooks/useOnlineStatus";
 
 const hasAnswerValue = (value) => {
   if (value === undefined || value === null) {
@@ -68,6 +70,19 @@ const StudentExam = () => {
     message: "",
   });
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const notify = useNotify();
+  const isOnline = useOnlineStatus();
+
+  useEffect(() => {
+    if (!isOnline) {
+      notify.warning("You are currently offline. Your progress will be synced once connection is restored.", "Network Issue");
+    } else if (isOnline && status === "Offline") {
+      notify.success("Connection restored. Syncing your progress...", "Back Online");
+      setStatus("");
+    }
+  }, [isOnline, notify]);
 
   const sectionClicksRef = useRef({
     header: 0,
@@ -311,7 +326,7 @@ const StudentExam = () => {
         }
       } catch (error) {
         setStatus(
-          error?.response?.data?.error ||
+          error?.errorMessage || error?.response?.data?.error ||
             "Violation detected. Please stay on the exam page.",
         );
       }
@@ -446,9 +461,17 @@ const StudentExam = () => {
     () =>
       debounce(async (questionId, answer) => {
         if (!sessionData?.id || submitted) return;
-        await saveResponse(sessionData.id, { questionId, answer });
+        setIsSaving(true);
+        try {
+          await saveResponse(sessionData.id, { questionId, answer });
+        } catch (error) {
+          notify.error("Failed to save your answer. Please check your connection.", "Save Error");
+          setStatus("Save failed. We will retry automatically.");
+        } finally {
+          setIsSaving(false);
+        }
       }, 500),
-    [sessionData?.id, submitted],
+    [sessionData?.id, submitted, notify],
   );
 
   const handleAnswerChange = (questionId, value, questionType) => {
@@ -498,27 +521,26 @@ const StudentExam = () => {
         .map((q) => ({ questionId: q.id, answer: answers[q.id] }))
         .filter(({ answer }) => hasAnswerValue(answer));
 
-      if (preparedResponses.length) {
-        await Promise.all(
-          preparedResponses.map(({ questionId, answer }) =>
-            saveResponse(sessionData.id, { questionId, answer }),
-          ),
-        );
-      }
-
       const flushOk = await closeCurrentWindow(new Date());
       if (!flushOk) {
-        setStatus("Unable to sync click data. Please try again.");
-        return;
+        notify.warning("Telemetry sync pending. Retrying...", "Sync Status");
       }
 
-      const { data } = await submitExam(sessionData.id, { feedback: "" });
+      setIsSaving(true);
+      const { data } = await submitExam(sessionData.id, { 
+        feedback: "", 
+        responses: preparedResponses 
+      });
+      setIsSaving(false);
+
       const successMessage = data?.message || "Exam submitted successfully.";
+      notify.success(successMessage, "Congratulations!");
       await finalizeClientExit(`${successMessage} Redirecting to login...`);
     } catch (error) {
       const message =
-        error?.response?.data?.error ||
+        error?.errorMessage || error?.response?.data?.error ||
         "Unable to submit exam. Please try again.";
+      notify.error(message, "Submission Failed");
       setStatus(message);
     }
   };

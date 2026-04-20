@@ -10,26 +10,27 @@ import {
 } from "../../api/adminApi";
 import ConfirmModal from "../../components/ConfirmModal";
 import { useSocket } from "../../hooks/useSocket";
+import { useNotify } from "../../components/Toast";
 
 const Questions = () => {
   const [exams, setExams] = useState([]);
   const [selected, setSelected] = useState("");
   const [questions, setQuestions] = useState([]);
   const [form, setForm] = useState({ text: "", type: "mcq", options: "", correctAnswer: "" });
-  const [error, setError] = useState("");
+  const notify = useNotify();
   const [deletingId, setDeletingId] = useState(null);
   const [modal, setModal] = useState({ isOpen: false, id: null });
   const [draggingId, setDraggingId] = useState(null);
 
   const loadExams = async () => {
-    try { setError(""); const { data } = await fetchExams(); setExams(data); }
-    catch (err) { setError(err?.response?.data?.error || "Failed to load exams."); }
+    try { const { data } = await fetchExams(); setExams(data); }
+    catch (err) { notify.error(err?.errorMessage || err?.response?.data?.error || error?.errorMessage || error?.response?.data?.error || "Failed to load exams."); }
   };
 
   const loadQuestions = async (examId) => {
     if (!examId) return;
-    try { setError(""); const { data } = await fetchQuestions(examId); setQuestions(data); }
-    catch (err) { setError(err?.response?.data?.error || "Failed to load questions."); }
+    try { const { data } = await fetchQuestions(examId); setQuestions(data); }
+    catch (err) { notify.error(err?.errorMessage || err?.response?.data?.error || error?.errorMessage || error?.response?.data?.error || "Failed to load questions."); }
   };
 
   useEffect(() => { loadExams(); }, []);
@@ -52,16 +53,16 @@ const Questions = () => {
       : [];
     const trimmedAnswer = form.correctAnswer.trim();
     if (form.type === "mcq" && (!trimmedAnswer || !options.includes(trimmedAnswer))) {
-      setError("Correct answer must match one of the MCQ options exactly.");
+      notify.error("Correct answer must match one of the MCQ options exactly.");
       return;
     }
     try {
-      setError("");
       await createQuestion({ examId: Number(selected), text: form.text, type: form.type, options, correctAnswer: trimmedAnswer || undefined });
       setForm({ text: "", type: "mcq", options: "", correctAnswer: "" });
+      notify.success("Question created successfully!");
       loadQuestions(selected);
     } catch (err) {
-      setError(err?.response?.data?.error || "Failed to create question.");
+      notify.error(err?.errorMessage || err?.response?.data?.error || error?.errorMessage || error?.response?.data?.error || "Failed to create question.");
     }
   };
 
@@ -70,18 +71,24 @@ const Questions = () => {
     setModal({ isOpen: false, id: null });
     if (deletingId) return;
     try {
-      setError(""); setDeletingId(id);
+      setDeletingId(id);
       await deleteQuestion(id);
       setQuestions((prev) => prev.filter((q) => q.id !== id));
+      notify.success("Question deleted successfully!");
     } catch (err) {
-      setError(err?.response?.data?.error || "Failed to delete question.");
+      notify.error(err?.errorMessage || err?.response?.data?.error || error?.errorMessage || error?.response?.data?.error || "Failed to delete question.");
     } finally { setDeletingId(null); }
   };
 
   const persistOrder = async (next) => {
     if (!selected) return;
-    try { await updateQuestionOrder(Number(selected), next.map((q) => q.id)); }
-    catch (err) { setError(err?.response?.data?.error || "Failed to reorder."); loadQuestions(selected); }
+    try { 
+      await updateQuestionOrder(Number(selected), next.map((q) => q.id)); 
+      notify.success("Question order saved!");
+    } catch (err) { 
+      notify.error(err?.errorMessage || err?.response?.data?.error || error?.errorMessage || error?.response?.data?.error || "Failed to reorder."); 
+      loadQuestions(selected); 
+    }
   };
 
   const handleDrop = async (targetId) => {
@@ -168,8 +175,6 @@ const Questions = () => {
                 <input id="correct-answer" name="correctAnswer" className="input" placeholder="Expected answer…" value={form.correctAnswer} onChange={(e) => setForm((p) => ({ ...p, correctAnswer: e.target.value }))} />
               )}
             </div>
-
-            {error && <div className="notice danger" style={{ fontSize: "0.82rem" }}>{error}</div>}
 
             <button
               className="btn"

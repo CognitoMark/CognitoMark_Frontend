@@ -5,12 +5,13 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { adminLogin } from "../../api/adminApi";
 import { storage } from "../../utils/storage";
+import { useNotify } from "../../components/Toast";
 
 const AdminLogin = () => {
   const router = useRouter();
   const [form, setForm] = useState({ username: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
+  const notify = useNotify();
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -18,13 +19,13 @@ const AdminLogin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
     try {
       const { data } = await adminLogin(form);
       storage.set("adminToken", data.token);
+      notify.success("Logged in successfully!");
       router.push("/admin/dashboard");
     } catch (err) {
-      setError(err.response?.data?.error || "Login failed");
+      notify.error(err?.errorMessage || err?.response?.data?.error || error?.errorMessage || error?.response?.data?.error || "Login failed");
     }
   };
 
@@ -91,13 +92,8 @@ const AdminLogin = () => {
                   </svg>
                 )}
               </button>
+              </div>
             </div>
-          </div>
-          {error && (
-            <div className="notice danger" style={{ textAlign: "center" }}>
-              {error}
-            </div>
-          )}
           <button
             className="btn"
             type="submit"

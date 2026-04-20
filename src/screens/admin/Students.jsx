@@ -4,21 +4,21 @@ import { useEffect, useMemo, useState } from "react";
 import { deleteStudent, fetchStudents } from "../../api/adminApi";
 import ConfirmModal from "../../components/ConfirmModal";
 import { useSocket } from "../../hooks/useSocket";
+import { useNotify } from "../../components/Toast";
 
 const Students = () => {
   const [students, setStudents] = useState([]);
-  const [error, setError] = useState("");
+  const notify = useNotify();
   const [deletingId, setDeletingId] = useState(null);
   const [modal, setModal] = useState({ isOpen: false, id: null });
   const [search, setSearch] = useState("");
 
   const load = async () => {
     try {
-      setError("");
       const { data } = await fetchStudents();
       setStudents(data);
     } catch (err) {
-      setError(err?.response?.data?.error || "Failed to load students.");
+      notify.error(err?.errorMessage || err?.response?.data?.error || error?.errorMessage || error?.response?.data?.error || "Failed to load students.");
     }
   };
 
@@ -36,12 +36,12 @@ const Students = () => {
     setModal({ isOpen: false, id: null });
     if (deletingId) return;
     try {
-      setError("");
       setDeletingId(id);
       await deleteStudent(id);
       setStudents((prev) => prev.filter((s) => s.id !== id));
+      notify.success("Student deleted successfully!");
     } catch (err) {
-      setError(err?.response?.data?.error || "Failed to delete student.");
+      notify.error(err?.errorMessage || err?.response?.data?.error || error?.errorMessage || error?.response?.data?.error || "Failed to delete student.");
     } finally {
       setDeletingId(null);
     }
@@ -83,7 +83,6 @@ const Students = () => {
 
       {/* ── Students table ── */}
       <div className="card">
-        {error && <div className="notice danger" style={{ marginBottom: "12px" }}>{error}</div>}
 
         {filtered.length === 0 ? (
           <div style={{ textAlign: "center", padding: "40px 0", color: "var(--muted)", fontSize: "0.875rem" }}>
